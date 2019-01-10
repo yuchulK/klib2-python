@@ -6,7 +6,7 @@ Simple example of Processing API for Snowforce 3.
 
 DEVELOPMENT ENVIRONMENT
 -----------------------
-* Python https://www.python.org
+* Python 3 https://www.python.org
 * Snowforce 3
    * https://www.kitronyx.com/downloads.html
    * http://sites.kitronyx.com/wiki/applications/snowforce-3

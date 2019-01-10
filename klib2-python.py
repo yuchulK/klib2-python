@@ -12,9 +12,6 @@ import base64
 from socket import *
 from select import select
 
-reload(sys)
-sys.setdefaultencoding('utf-8')
-
 import codecs
 
 class KLib():
@@ -37,7 +34,6 @@ class KLib():
 
         self.client_socket_connection = False
 
-        self.header = "7e7e7e7e".decode("hex")
     #TcpIP 연결 시도
     def init(self):
         try:
@@ -57,35 +53,28 @@ class KLib():
 
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
-            if(self.buf.count(self.header) > 1): 
+            if(len(self.buf) > 10000):
                 break
             resp = self.client_socket.recv(self.BUFSIZE)
             self.buf = self.buf + resp
         
         #header 위치 찾기
-        sp = self.buf.find(self.header)
+        sp = 0
+        while(1):
+            sp = self.buf.index(0x7e,sp)
+            if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
+                break
         #header, tail을 뺀 버퍼를 result에 집어넣음
         self.result = self.buf[sp+4:sp+4996]
 
-        #print (binascii.hexlify(self.result))
         self.device = self.result[4:28]
-        
         self.sensor = self.result[28:52]
-
-        self.nrow = int(binascii.hexlify(self.result[80]),16)
-        self.ncol = int(binascii.hexlify(self.result[84]),16)
-
+        self.nrow = int.from_bytes(self.result[80:83],byteorder='little')
+        self.ncol = int.from_bytes(self.result[84:87],byteorder='little')
         self.datasize = self.nrow * self.ncol
-
         # rawdata array 생성
         for i in range(96,self.datasize+96):
-             self.adc.append(int(binascii.hexlify(self.result[i]),16))
-        #print self.device
-        #print self.sensor
-        #print self.nrow
-        #print self.ncol
-        #print self.adc
-        #print (self.result)
+            self.adc.append(int(self.result[i]))
                
 
     def check_tcp_connection(self):
@@ -109,28 +98,32 @@ class KLib():
         self.buf = self.buf + resp
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
-            if(self.buf.count(self.header) > 1):
+            if(len(self.buf) > 10000):
                 break
             resp = self.client_socket.recv(self.BUFSIZE)
             self.buf = self.buf + resp
-        #헤더 위치 찾기
-        sp = self.buf.find(self.header)
+        
+        #header 위치 찾기
+        sp = 0
+        while(1):
+            sp = self.buf.index(0x7e,sp)
+            if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
+                break
 
         self.result = self.buf[sp+4:sp+4996]
 
         self.buf = self.buf[sp+4996:]
 
         for i in range(96,self.datasize+96):
-             self.adc[i-96] = int(binascii.hexlify(self.result[i]),16)
-             
+             self.adc[i-96] = int(self.result[i])
 
     def printadc(self):
         for i in range(self.nrow):
             write_str = ""
             for j in range(self.ncol):
                 write_str = write_str + " " + str(self.adc[i*self.ncol + j])
-            print write_str
-        print ""
+            print(write_str)
+        print()
 
 if __name__ == "__main__":
     klib = KLib("127.0.0.1", 3800)
