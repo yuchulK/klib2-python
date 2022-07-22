@@ -1,5 +1,6 @@
 #-*- coding: utf-8 -*-
 import os
+from subprocess import CREATE_NEW_CONSOLE
 import sys
 import time
 import numpy as np
@@ -27,10 +28,10 @@ class KLib():
         self.adc = []
         
         self.buf = None
-        self.result = None
-        self.BUFSIZE = 5000
+        self.BufSize = 5000
         self.addr = None
         self.client_socket = None
+        self.result = None
 
         self.client_socket_connection = False
 
@@ -47,34 +48,48 @@ class KLib():
             return False
         self.client_socket_connection = True
 
-        resp = self.client_socket.recv(self.BUFSIZE) #버퍼 받기
+        resp = self.client_socket.recv(self.BufSize) #버퍼 받기
 
         self.buf = resp
+        self.datasize = 5000
+        self.BufSize = self.datasize +200
+        sp = 0
+        
 
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
-            if(len(self.buf) > 10000):
+            if(len(self.buf) > self.BufSize):
                 break
-            resp = self.client_socket.recv(self.BUFSIZE)
+            resp = self.client_socket.recv(self.BufSize)
             self.buf = self.buf + resp
-        
-        #header 위치 찾기
-        sp = 0
-        while(1):
-            sp = self.buf.index(0x7e,sp)
-            if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
-                break
-        #header, tail을 뺀 버퍼를 result에 집어넣음
-        self.result = self.buf[sp+4:sp+4996]
 
-        self.device = self.result[4:28]
-        self.sensor = self.result[28:52]
-        self.nrow = int.from_bytes(self.result[80:83],byteorder='little')
-        self.ncol = int.from_bytes(self.result[84:87],byteorder='little')
+             #header 위치 찾기
+            
+            while(1):
+                sp = self.buf.index(0x7e,sp)
+                if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
+                    self.nrow = int.from_bytes(self.buf[88:91],byteorder='little')
+                    self.ncol = int.from_bytes(self.buf[92:95],byteorder='little')
+                    self.datasize = self.nrow * self.ncol
+                    self.BufSize = self.datasize + 200
+                    break
+        
+       
+       
+
+        self.device = self.buf[4:28]
+        self.sensor = self.buf[28:52]
+        self.nrow = int.from_bytes(self.buf[88:91],byteorder='little')
+        self.ncol = int.from_bytes(self.buf[92:95],byteorder='little')
         self.datasize = self.nrow * self.ncol
+        self.BufSize
+
+         #header, tail을 뺀 버퍼를 result에 집어넣음
+        self.result = self.buf[sp + 4 : sp + self.datasize]
+
         # rawdata array 생성
         for i in range(96,self.datasize+96):
-            self.adc.append(int(self.result[i]))
+            self.adc.append(int(self.buf[i]))
                
 
     def check_tcp_connection(self):
@@ -92,15 +107,13 @@ class KLib():
 
     #패킷읽기
     def read(self):
-        resp = self.client_socket.recv(self.BUFSIZE)
+        self.buf  = self.client_socket.recv(self.BufSize)
 
-        #패킷이 잘려져서 올수도 있기 때문에 버퍼를 뒤에 추가함
-        self.buf = self.buf + resp
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
-            if(len(self.buf) > 10000):
+            if(len(self.buf) > self.BufSize):
                 break
-            resp = self.client_socket.recv(self.BUFSIZE)
+            resp = self.client_socket.recv(self.BufSize)
             self.buf = self.buf + resp
         
         #header 위치 찾기
@@ -110,12 +123,8 @@ class KLib():
             if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
                 break
 
-        self.result = self.buf[sp+4:sp+4996]
-
-        self.buf = self.buf[sp+4996:]
-
-        for i in range(96,self.datasize+96):
-             self.adc[i-96] = int(self.result[i])
+        for i in range(96+sp,self.datasize+96+sp):
+             self.adc[i-96-sp] = int(self.buf[i])
 
     def printadc(self):
         for i in range(self.nrow):
@@ -130,5 +139,5 @@ if __name__ == "__main__":
     
     klib.start()
     while(1):
-        klib.read()
+        klib.read()        
         klib.printadc()
