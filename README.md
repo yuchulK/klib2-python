@@ -3,7 +3,8 @@
 ![Origin](img/KLib2_python_Demo.png)
 
 Simple example of Processing API for Snowforce 3.
-MAX FPS: 30
+
+Max FPS(Frames per second) : 30
 
 DEVELOPMENT ENVIRONMENT
 -----------------------
