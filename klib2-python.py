@@ -9,6 +9,7 @@ import datetime
 import time
 import binascii
 import base64
+import os
 
 from socket import *
 from select import select
@@ -90,7 +91,8 @@ class KLib():
         # rawdata array 생성
         for i in range(96,self.datasize+96):
             self.adc.append(int(self.buf[i]))
-               
+            
+        
 
     def check_tcp_connection(self):
         if(self.client_socket_connection == True):
@@ -107,7 +109,7 @@ class KLib():
 
     #패킷읽기
     def read(self):
-        self.buf  = self.client_socket.recv(self.BufSize)
+        self.buf  = self.buf + self.client_socket.recv(self.BufSize)
 
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
@@ -126,7 +128,12 @@ class KLib():
         for i in range(96+sp,self.datasize+96+sp):
              self.adc[i-96-sp] = int(self.buf[i])
 
-    def printadc(self):
+        # 읽어들인 adc 데이터 부분 삭제
+        self.buf = self.buf[self.datasize+96+sp:]
+
+
+    def printadc(self):        
+        os.system('cls')
         for i in range(self.nrow):
             write_str = ""
             for j in range(self.ncol):
