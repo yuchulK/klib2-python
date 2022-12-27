@@ -10,11 +10,31 @@ import time
 import binascii
 import base64
 import os
+import socketio
+import requests
 
 from socket import *
 from select import select
 
 import codecs
+
+
+# standard Python
+sio = socketio.Client()
+
+sio.connect('http://localhost:3001')
+
+@sio.event
+def connect():
+    print("I'm connected!")
+
+@sio.event
+def message(data):
+    print('I received a message!')
+
+@sio.on('send_footStatus')
+def on_message(data):
+    print('I received a message!2')
 
 class KLib():
     def __init__(self,_server_ip = "127.0.0.1", _port = 3800):
@@ -139,7 +159,11 @@ class KLib():
             for j in range(self.ncol):
                 write_str = write_str + " " + str(self.adc[i*self.ncol + j])
             print(write_str)
+            foot = 'foot'
+            footNum= 'footNum'
+            sio.emit('send_footStatus', {footNum: i,foot: write_str})
         print()
+ 
 
 if __name__ == "__main__":
     klib = KLib("127.0.0.1", 3800)
@@ -159,3 +183,5 @@ if __name__ == "__main__":
             prevTime = curTime
             tick = 0
         print("FPS : ", FPS)
+        foot = 'foot'
+        sio.emit('send_footStatus', {foot: "end"})
