@@ -22,7 +22,7 @@ import codecs
 # standard Python
 sio = socketio.Client()
 
-sio.connect('http://localhost:3001')
+sio.connect('http://localhost:3004')
 
 @sio.event
 def connect():
@@ -154,14 +154,17 @@ class KLib():
 
     def printadc(self):        
         os.system('cls')
+        write_str = ""
         for i in range(self.nrow):
-            write_str = ""
+            # write_str = ""
             for j in range(self.ncol):
                 write_str = write_str + " " + str(self.adc[i*self.ncol + j])
-            print(write_str)
+            # print(write_str)
             foot = 'foot'
             footNum= 'footNum'
-            sio.emit('send_footStatus', {footNum: i,foot: write_str})
+           
+        print(write_str)
+        sio.emit('send_footStatus', {foot: write_str})
         print()
  
 
@@ -184,4 +187,5 @@ if __name__ == "__main__":
             tick = 0
         print("FPS : ", FPS)
         foot = 'foot'
-        sio.emit('send_footStatus', {foot: "end"})
+        footNum= 'footNum'
+        # sio.emit('send_footStatus', {footNum: 0,foot: "end"})
