@@ -47,7 +47,7 @@ class KLib():
         self.device = ""
         self.sensor = ""
         self.adc = []
-        
+
         self.buf = None
         self.BufSize = 5000
         self.addr = None
@@ -61,7 +61,7 @@ class KLib():
         try:
             self.addr = (self.server_ip, self.port) #server address 정보
             self.client_socket = socket(AF_INET, SOCK_STREAM) #소켓 정보
-            
+
             self.client_socket.connect(self.addr) # tcpip연결
         except Exception as e:
             print('Failed to connect TCP/IP!')
@@ -75,7 +75,7 @@ class KLib():
         self.datasize = 5000
         self.BufSize = self.datasize +200
         sp = 0
-        
+
 
         #header가 2개 이상이 아닌경우 패킷이 다안들어왔을 가능성이 있음
         while(1):
@@ -85,7 +85,7 @@ class KLib():
             self.buf = self.buf + resp
 
              #header 위치 찾기
-            
+
             while(1):
                 sp = self.buf.index(0x7e,sp)
                 if(self.buf[sp+1] == 0x7e and self.buf[sp+2]== 0x7e and self.buf[sp+3] == 0x7e):
@@ -94,9 +94,9 @@ class KLib():
                     self.datasize = self.nrow * self.ncol
                     self.BufSize = self.datasize + 200
                     break
-        
-       
-       
+
+
+
 
         self.device = self.buf[4:28]
         self.sensor = self.buf[28:52]
@@ -111,8 +111,8 @@ class KLib():
         # rawdata array 생성
         for i in range(96,self.datasize+96):
             self.adc.append(int(self.buf[i]))
-            
-        
+
+
 
     def check_tcp_connection(self):
         if(self.client_socket_connection == True):
@@ -137,7 +137,7 @@ class KLib():
                 break
             resp = self.client_socket.recv(self.BufSize)
             self.buf = self.buf + resp
-        
+
         #header 위치 찾기
         sp = 0
         while(1):
@@ -152,7 +152,7 @@ class KLib():
         self.buf = self.buf[self.datasize+96+sp:]
 
 
-    def printadc(self):        
+    def printadc(self):
         os.system('cls')
         for i in range(self.nrow):
             write_str = ""
@@ -163,25 +163,26 @@ class KLib():
             footNum= 'footNum'
             sio.emit('send_footStatus', {footNum: i,foot: write_str})
         print()
- 
+
 
 if __name__ == "__main__":
     klib = KLib("127.0.0.1", 3800)
     tick = 0
     FPS = 0
     prevTime = time.time()
-    
+
     klib.start()
     while(1):
-        klib.read()        
+        klib.read()
         klib.printadc()
         tick = tick + 1
         #FPS 계산
         curTime = time.time()
-        if curTime - prevTime > 1 :            
+        if curTime - prevTime > 1 :
             FPS = tick
             prevTime = curTime
             tick = 0
         print("FPS : ", FPS)
         foot = 'foot'
-        sio.emit('send_footStatus', {foot: "end"})
+        footNum= 'footNum'
+        sio.emit('send_footStatus', {footNum: 0,foot: "end"})
