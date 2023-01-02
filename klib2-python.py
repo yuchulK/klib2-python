@@ -14,6 +14,7 @@ import base64
 import os
 import socketio
 import requests
+import sys, os
 
 from socket import *
 from select import select
@@ -171,7 +172,6 @@ class KLib():
 
 
 if __name__ == "__main__":
-    def worker():
         klib = KLib("127.0.0.1", 3800)
         tick = 0
         FPS = 0
@@ -179,7 +179,6 @@ if __name__ == "__main__":
 
         klib.start()
         while(1):
-
             klib.read()
             klib.printadc()
             tick = tick + 1
@@ -193,21 +192,27 @@ if __name__ == "__main__":
             foot = 'foot'
             footNum= 'footNum'
             sio.emit('send_footStatus', {footNum: 0,foot: "end"})
-            time.sleep(20)
 
 
-    def schedule(interval, f, wait=True):
-        base_time = time.time()
-        next_time = 0
-        while True:
-            t = threading.Thread(target=f)
-            t.start()
-            if wait:
-                t.join()
-            next_time = ((base_time - time.time()) % interval) or interval
-            time.sleep(next_time)
 
-    schedule(20,worker)
+
+def worker():
+    os.execv(sys.executable, os.path.abspath(__file__))
+    # time.sleep(20)
+
+def schedule(interval, f, wait=True):
+    base_time = time.time()
+    next_time = 0
+    while True:
+        t = threading.Thread(target=f)
+        t.start()
+        if wait:
+            t.join()
+        next_time = ((base_time - time.time()) % interval) or interval
+        time.sleep(next_time)
+
+
+schedule(20,worker)
 
 
 
