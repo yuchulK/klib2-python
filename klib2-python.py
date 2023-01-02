@@ -15,7 +15,6 @@ import os
 import socketio
 import requests
 import sys, os
-from numba import jit
 
 from socket import *
 from select import select
@@ -29,23 +28,18 @@ sio = socketio.Client()
 sio.connect('http://localhost:3004')
 
 @sio.event
-@jit
 def connect():
     print("I'm connected!")
 
 @sio.event
-@jit
 def message(data):
     print('I received a message!')
 
 @sio.on('send_footStatus')
-@jit
 def on_message(data):
     print('I received a message!2')
 
-@jit
 class KLib():
-    @jit
     def __init__(self,_server_ip = "127.0.0.1", _port = 3800):
         self.nrow = 0
         self.ncol = 0
@@ -66,7 +60,6 @@ class KLib():
         self.client_socket_connection = False
 
     #TcpIP 연결 시도
-    @jit
     def init(self):
         try:
             self.addr = (self.server_ip, self.port) #server address 정보
@@ -123,24 +116,20 @@ class KLib():
             self.adc.append(int(self.buf[i]))
 
 
-    @jit
     def check_tcp_connection(self):
         if(self.client_socket_connection == True):
             return True
         else:
             return False
     #서버와 tcp 연결 시도
-    @jit
     def start(self):
         self.init()
     #서봐의 tcp 연결 끊기
-    @jit
     def stop(self):
         self.client_socket.close()
         self.client_socket_connection = False
 
     #패킷읽기
-    @jit
     def read(self):
         self.buf  = self.buf + self.client_socket.recv(self.BufSize)
 
@@ -164,7 +153,6 @@ class KLib():
         # 읽어들인 adc 데이터 부분 삭제
         self.buf = self.buf[self.datasize+96+sp:]
 
-    @jit
     def printadc(self):
         os.system('cls')
         write_str = ""
@@ -205,12 +193,10 @@ if __name__ == "__main__":
 
 
 
-@jit
 def worker():
     sys.stdout.flush()
     os.execv(sys.argv[0], sys.argv)
     # time.sleep(20)
-@jit
 def schedule(interval, f, wait=True):
     base_time = time.time()
     next_time = 0
