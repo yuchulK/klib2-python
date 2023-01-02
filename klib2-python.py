@@ -171,27 +171,29 @@ class KLib():
 
 
 if __name__ == "__main__":
-    klib = KLib("127.0.0.1", 3800)
-    tick = 0
-    FPS = 0
-    prevTime = time.time()
-
-    klib.start()
     def worker():
-        klib.read()
-        klib.printadc()
-        tick = tick + 1
-        #FPS 계산
-        curTime = time.time()
-        if curTime - prevTime > 1 :
-            FPS = tick
-            prevTime = curTime
-            tick = 0
-        print("FPS : ", FPS)
-        foot = 'foot'
-        footNum= 'footNum'
-        sio.emit('send_footStatus', {footNum: 0,foot: "end"})
-        time.sleep(0.1)
+        klib = KLib("127.0.0.1", 3800)
+        tick = 0
+        FPS = 0
+        prevTime = time.time()
+
+        klib.start()
+        while(1):
+
+            klib.read()
+            klib.printadc()
+            tick = tick + 1
+            #FPS 계산
+            curTime = time.time()
+            if curTime - prevTime > 1 :
+                FPS = tick
+                prevTime = curTime
+                tick = 0
+            print("FPS : ", FPS)
+            foot = 'foot'
+            footNum= 'footNum'
+            sio.emit('send_footStatus', {footNum: 0,foot: "end"})
+            time.sleep(20)
 
 
     def schedule(interval, f, wait=True):
@@ -205,7 +207,7 @@ if __name__ == "__main__":
             next_time = ((base_time - time.time()) % interval) or interval
             time.sleep(next_time)
 
-    schedule(0.1,worker)
+    schedule(20,worker)
 
 
 
