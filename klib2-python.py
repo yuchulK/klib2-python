@@ -24,27 +24,23 @@ import codecs
 
 
 # standard Python
-sio = socketio.Client()
+#sio = socketio.Client()
 
-sio.connect('http://localhost:3004')
+#sio.connect('http://localhost:3004')
 
-@sio.event
-@jit
-def connect():
-    print("I'm connected!")
+#@sio.event
+#def connect():
+    #print("I'm connected!")
 
-@sio.event
-@jit
-def message(data):
-    print('I received a message!')
+#@sio.event
+#def message(data):
+    #print('I received a message!')
 
-@sio.on('send_footStatus')
-@jit
-def on_message(data):
-    print('I received a message!2')
+#@sio.on('send_footStatus')
+#def on_message(data):
+    #print('I received a message!2')
 
 class KLib():
-    @jit
     def __init__(self,_server_ip = "127.0.0.1", _port = 3800):
         self.nrow = 0
         self.ncol = 0
@@ -65,7 +61,6 @@ class KLib():
         self.client_socket_connection = False
 
     #TcpIP 연결 시도
-    @jit
     def init(self):
         try:
             self.addr = (self.server_ip, self.port) #server address 정보
@@ -129,11 +124,9 @@ class KLib():
         else:
             return False
     #서버와 tcp 연결 시도
-    @jit
     def start(self):
         self.init()
     #서봐의 tcp 연결 끊기
-    @jit
     def stop(self):
         self.client_socket.close()
         self.client_socket_connection = False
@@ -176,7 +169,7 @@ class KLib():
             footNum= 'footNum'
 
         print(write_str)
-        sio.emit('send_footStatus', {foot: write_str})
+        #sio.emit('send_footStatus', {foot: write_str})
         print()
 
 
@@ -200,7 +193,7 @@ if __name__ == "__main__":
         print("FPS : ", FPS)
         foot = 'foot'
         footNum= 'footNum'
-        sio.emit('send_footStatus', {footNum: 0,foot: "end"})
+        #sio.emit('send_footStatus', {footNum: 0,foot: "end"})
 
 
 
