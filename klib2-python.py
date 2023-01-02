@@ -24,21 +24,21 @@ import codecs
 
 
 # standard Python
-#sio = socketio.Client()
+sio = socketio.Client()
 
-#sio.connect('http://localhost:3004')
+sio.connect('http://localhost:3004')
 
-#@sio.event
-#def connect():
-    #print("I'm connected!")
+@sio.event
+def connect():
+    print("I'm connected!")
 
-#@sio.event
-#def message(data):
-    #print('I received a message!')
+@sio.event
+def message(data):
+    print('I received a message!')
 
-#@sio.on('send_footStatus')
-#def on_message(data):
-    #print('I received a message!2')
+@sio.on('send_footStatus')
+def on_message(data):
+    print('I received a message!2')
 
 class KLib():
     def __init__(self,_server_ip = "127.0.0.1", _port = 3800):
@@ -98,8 +98,6 @@ class KLib():
                     self.datasize = self.nrow * self.ncol
                     self.BufSize = self.datasize + 200
                     break
-
-
 
 
         self.device = self.buf[4:28]
@@ -169,7 +167,7 @@ class KLib():
             footNum= 'footNum'
 
         print(write_str)
-        #sio.emit('send_footStatus', {foot: write_str})
+        sio.emit('send_footStatus', {foot: write_str})
         print()
 
 
@@ -193,44 +191,3 @@ if __name__ == "__main__":
         print("FPS : ", FPS)
         foot = 'foot'
         footNum= 'footNum'
-        #sio.emit('send_footStatus', {footNum: 0,foot: "end"})
-
-
-
-@jit
-def worker():
-    sys.stdout.flush()
-    os.execv(sys.argv[0], sys.argv)
-    # time.sleep(20)
-@jit
-def schedule(interval, f, wait=True):
-    base_time = time.time()
-    next_time = 0
-    while True:
-        t = threading.Thread(target=f)
-        t.start()
-        if wait:
-            t.join()
-        next_time = ((base_time - time.time()) % interval) or interval
-        time.sleep(next_time)
-
-
-schedule(20,worker)
-
-
-
-
-    # while(1):
-    #     klib.read()
-    #     klib.printadc()
-    #     tick = tick + 1
-    #     #FPS 계산
-    #     curTime = time.time()
-    #     if curTime - prevTime > 1 :
-    #         FPS = tick
-    #         prevTime = curTime
-    #         tick = 0
-    #     print("FPS : ", FPS)
-    #     foot = 'foot'
-    #     footNum= 'footNum'
-    #     sio.emit('send_footStatus', {footNum: 0,foot: "end"})
